@@ -1,8 +1,8 @@
 import streamlit as st
-import tensorflow as tf
 from PIL import Image, ImageOps
 import numpy as np
 import os
+from keras.models import load_model  # <-- TensorFlow ki jagah direct Keras import kiya
 
 # 1. Page Configuration
 st.set_page_config(page_title="PKR Currency Detector Pro", page_icon="🇵🇰", layout="centered")
@@ -22,11 +22,10 @@ st.divider()
 # 2. Model Loading
 @st.cache_resource
 def load_my_model():
-    # Make sure your file is named exactly this in E:\Currency Project
     model_path = 'pkr_final_model.h5' 
     if os.path.exists(model_path):
         try:
-            return tf.keras.models.load_model(model_path)
+            return load_model(model_path)  # <-- Yahan se 'tf.keras.models.' hata diya
         except Exception as e:
             st.error(f"Error loading model: {e}")
             return None
@@ -36,7 +35,7 @@ def load_my_model():
 
 model = load_my_model()
 
-# 3. Class Names (Sorted Alphabetically - Do not change the order)
+# 3. Class Names (Sorted Alphabetically)
 class_names = [
     '10_back', '10_front', '100_back', '100_front', 
     '1000_back', '1000_front', '20_back', '20_front', 
@@ -51,7 +50,6 @@ if model is not None:
     if uploaded_file is not None:
         # Load and convert image
         image = Image.open(uploaded_file)
-        # Fix: Convert to RGB to avoid "4 vs 3 depth" error
         image = image.convert('RGB')
         
         st.image(image, caption='Uploaded Image', use_container_width=True)
@@ -72,7 +70,6 @@ if model is not None:
         # 5. Display Results
         st.subheader("Final Result:")
         
-        # Format name for display (e.g. 1000_front -> 1000 FRONT)
         display_name = result_label.replace('_', ' ').upper()
         
         if confidence > 80:
