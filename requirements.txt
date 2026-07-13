@@ -1,3 +1,2 @@
 streamlit
-tensorflow
-pillow
+tensorflow-cpu
