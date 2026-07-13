@@ -2,8 +2,7 @@ import streamlit as st
 from PIL import Image, ImageOps
 import numpy as np
 import os
-from keras.models import load_model  # <-- TensorFlow ki jagah direct Keras import kiya
-
+import tensorflow as tf  # <-- Wapas 'import tensorflow as tf' likh dein
 # 1. Page Configuration
 st.set_page_config(page_title="PKR Currency Detector Pro", page_icon="🇵🇰", layout="centered")
 
