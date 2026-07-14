@@ -2,7 +2,9 @@ import streamlit as st
 from PIL import Image, ImageOps
 import numpy as np
 import os
-import tensorflow as tf  # <-- Wapas 'import tensorflow as tf' likh dein
+import tensorflow as tf
+import gdown
+
 # 1. Page Configuration
 st.set_page_config(page_title="PKR Currency Detector Pro", page_icon="🇵🇰", layout="centered")
 
@@ -18,23 +20,34 @@ st.title("🇵🇰 Pakistani Currency Recognition")
 st.write("System Status: **High Accuracy Mode (88.4%)**")
 st.divider()
 
-# 2. Model Loading
+# 2. Model Loading from Google Drive
 @st.cache_resource
 def load_my_model():
-    model_path = 'pkr_final_model.h5' 
+    model_path = 'pkr_final_model.h5'
+    
+    # Google Drive Direct Download Link setup
+    file_id = '1WNyZc7lc-CLabQfEiqBQxVBA5rYrP67f'
+    drive_url = f'https://drive.google.com/uc?id={file_id}'
+    
+    if not os.path.exists(model_path):
+        with st.spinner('Downloading AI Model from Google Drive... Please wait, this may take a moment.'):
+            try:
+                gdown.download(drive_url, model_path, quiet=False)
+            except Exception as e:
+                st.error(f"Download failed: {e}")
+                return None
+
     if os.path.exists(model_path):
         try:
-            return load_model(model_path)  # <-- Yahan se 'tf.keras.models.' hata diya
+            return tf.keras.models.load_model(model_path)
         except Exception as e:
             st.error(f"Error loading model: {e}")
             return None
-    else:
-        st.error(f"Error: {model_path} not found! Please check your folder.")
-        return None
+    return None
 
 model = load_my_model()
 
-# 3. Class Names (Sorted Alphabetically)
+# 3. Class Names (Sorted Alphabetically - Do not change the order)
 class_names = [
     '10_back', '10_front', '100_back', '100_front', 
     '1000_back', '1000_front', '20_back', '20_front', 
@@ -49,6 +62,7 @@ if model is not None:
     if uploaded_file is not None:
         # Load and convert image
         image = Image.open(uploaded_file)
+        # Fix: Convert to RGB to avoid "4 vs 3 depth" error
         image = image.convert('RGB')
         
         st.image(image, caption='Uploaded Image', use_container_width=True)
@@ -69,6 +83,7 @@ if model is not None:
         # 5. Display Results
         st.subheader("Final Result:")
         
+        # Format name for display (e.g. 1000_front -> 1000 FRONT)
         display_name = result_label.replace('_', ' ').upper()
         
         if confidence > 80:
